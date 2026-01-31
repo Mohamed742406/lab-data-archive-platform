@@ -133,33 +133,11 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               className="w-full"
             />
           </form>
-
-          {/* Demo Credentials */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-center text-sm text-gray-500 mb-3">
-              <span className="block font-medium text-gray-700">بيانات الدخول التجريبية</span>
-              <span className="text-xs">Demo Credentials</span>
-            </p>
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
-                <div className="flex flex-col items-center">
-                  <span className="font-bold text-blue-700 mb-1">فني / Technician</span>
-                  <span className="text-gray-600">technician / tech123</span>
-                </div>
-              </div>
-              <div className="bg-green-50 rounded-lg p-3 border border-green-100">
-                <div className="flex flex-col items-center">
-                  <span className="font-bold text-green-700 mb-1">مهندس / Engineer</span>
-                  <span className="text-gray-600">engineer / eng123</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}
         <p className="text-center text-blue-200 text-sm mt-6">
-          © 2024 - مختبرات مواد البناء | Construction Materials Laboratories
+          تم إعداد وتطوير المنصة م/ محمد أحمد القصبى
         </p>
       </div>
     </div>
