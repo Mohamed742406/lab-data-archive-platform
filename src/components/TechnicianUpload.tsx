@@ -1,224 +1,199 @@
-import { useState } from 'react';
-import { BilingualButton } from './BilingualButton';
-import { BilingualLabel } from './BilingualLabel';
-import { DraftRecord, TestType } from '../types';
+import React, { useState } from 'react';
+import { Draft } from '../types';
 
 interface TechnicianUploadProps {
-  onUpload: (draft: Omit<DraftRecord, 'id' | 'uploadedAt' | 'status'>) => void;
-  technicianName: string;
+  onAddDraft: (draft: Omit<Draft, 'id' | 'created_at'>) => void;
+  technicianId: string;
+  onLogout: () => void;
 }
 
-export function TechnicianUpload({ onUpload, technicianName }: TechnicianUploadProps) {
-  const [sampleId, setSampleId] = useState('');
-  const [testType, setTestType] = useState<TestType>('concrete');
-  const [notes, setNotes] = useState('');
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageName, setImageName] = useState('');
-  const [excelFile, setExcelFile] = useState<string | null>(null);
-  const [excelFileName, setExcelFileName] = useState('');
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageName(file.name);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleExcelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setExcelFileName(file.name);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setExcelFile(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+export function TechnicianUpload({ onAddDraft, technicianId, onLogout }: TechnicianUploadProps) {
+  const [formData, setFormData] = useState({
+    draft_number: '',
+    project_name: '',
+    client_name: '',
+    test_type: '',
+    sample_location: '',
+    depth: '',
+    notes: '',
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!sampleId || !imagePreview) return;
-
-    onUpload({
-      sampleId,
-      testType,
-      imageUrl: imagePreview,
-      imageName,
-      uploadedBy: technicianName,
-      notes,
-      excelFileUrl: excelFile || undefined,
-      excelFileName: excelFileName || undefined,
+    
+    onAddDraft({
+      ...formData,
+      status: 'pending',
+      technician_id: technicianId,
+      engineer_id: null,
     });
 
     // Reset form
-    setSampleId('');
-    setTestType('concrete');
-    setNotes('');
-    setImagePreview(null);
-    setImageName('');
-    setExcelFile(null);
-    setExcelFileName('');
+    setFormData({
+      draft_number: '',
+      project_name: '',
+      client_name: '',
+      test_type: '',
+      sample_location: '',
+      depth: '',
+      notes: '',
+    });
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-      <div className="mb-6 text-center border-b pb-4">
-        <h2 className="text-2xl font-bold text-gray-800">رفع صور الدرفت</h2>
-        <p className="text-gray-500 text-sm">Upload Draft Images</p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Sample ID */}
-        <div className="space-y-2">
-          <BilingualLabel arabicText="رقم العينة" englishText="Sample ID" />
-          <input
-            type="text"
-            value={sampleId}
-            onChange={(e) => setSampleId(e.target.value)}
-            placeholder="مثال: CON-2024-001"
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            required
-          />
-        </div>
-
-        {/* Test Type */}
-        <div className="space-y-2">
-          <BilingualLabel arabicText="نوع الاختبار" englishText="Test Type" />
-          <select
-            value={testType}
-            onChange={(e) => setTestType(e.target.value as TestType)}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
-          >
-            <option value="concrete">خرسانة / Concrete</option>
-            <option value="asphalt">أسفلت / Asphalt</option>
-            <option value="soil">تربة / Soil</option>
-          </select>
-        </div>
-
-        {/* Image Upload */}
-        <div className="space-y-2">
-          <BilingualLabel arabicText="صورة الدرفت" englishText="Draft Image" />
-          <div className="relative">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-              id="draft-image"
-              required={!imagePreview}
-            />
-            <label
-              htmlFor="draft-image"
-              className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all"
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-800">رفع درفت جديد</h1>
+              <p className="text-slate-600 mt-1">Upload New Draft</p>
+            </div>
+            <button
+              onClick={onLogout}
+              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
             >
-              {imagePreview ? (
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="h-full w-full object-contain rounded-lg"
+              تسجيل الخروج
+            </button>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Draft Number */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  رقم الدرفت / Draft Number
+                </label>
+                <input
+                  type="text"
+                  name="draft_number"
+                  value={formData.draft_number}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="مثال: D-2024-001"
                 />
-              ) : (
-                <div className="text-center">
-                  <svg
-                    className="mx-auto h-12 w-12 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <p className="mt-2 text-sm text-gray-600">اضغط لرفع الصورة</p>
-                  <p className="text-xs text-gray-400">Click to upload image</p>
-                </div>
-              )}
-            </label>
-          </div>
-          {imageName && (
-            <p className="text-xs text-gray-500 mt-1">{imageName}</p>
-          )}
-        </div>
+              </div>
 
-        {/* Notes */}
-        <div className="space-y-2">
-          <BilingualLabel arabicText="ملاحظات" englishText="Notes" />
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="أضف ملاحظات إضافية هنا..."
-            rows={3}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-          />
-        </div>
+              {/* Project Name */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  اسم المشروع / Project Name
+                </label>
+                <input
+                  type="text"
+                  name="project_name"
+                  value={formData.project_name}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="اسم المشروع"
+                />
+              </div>
 
-        {/* Excel File Upload */}
-        <div className="space-y-2">
-          <BilingualLabel arabicText="ملف الحسابات (اختياري)" englishText="Calculations File (Optional)" />
-          <div className="relative">
-            <input
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              onChange={handleExcelChange}
-              className="hidden"
-              id="excel-file"
-            />
-            <label
-              htmlFor="excel-file"
-              className="flex items-center justify-center gap-3 w-full py-3 px-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all"
-            >
-              {excelFileName ? (
-                <div className="flex items-center gap-2 text-green-600">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <span className="font-medium">{excelFileName}</span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setExcelFile(null);
-                      setExcelFileName('');
-                    }}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center text-gray-500">
-                  <svg className="w-8 h-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
-                  <span className="text-sm">اضغط لرفع ملف Excel</span>
-                  <span className="text-xs text-gray-400">Click to upload Excel file (.xlsx, .xls, .csv)</span>
-                </div>
-              )}
-            </label>
-          </div>
-        </div>
+              {/* Client Name */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  اسم العميل / Client Name
+                </label>
+                <input
+                  type="text"
+                  name="client_name"
+                  value={formData.client_name}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="اسم العميل"
+                />
+              </div>
 
-        {/* Submit Button */}
-        <BilingualButton
-          arabicText="رفع الدرفت"
-          englishText="Upload Draft"
-          type="submit"
-          variant="primary"
-          size="lg"
-          className="w-full"
-        />
-      </form>
+              {/* Test Type */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  نوع الاختبار / Test Type
+                </label>
+                <input
+                  type="text"
+                  name="test_type"
+                  value={formData.test_type}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="مثال: اختبار الكثافة"
+                />
+              </div>
+
+              {/* Sample Location */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  موقع العينة / Sample Location
+                </label>
+                <input
+                  type="text"
+                  name="sample_location"
+                  value={formData.sample_location}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="موقع أخذ العينة"
+                />
+              </div>
+
+              {/* Depth */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  العمق / Depth
+                </label>
+                <input
+                  type="text"
+                  name="depth"
+                  value={formData.depth}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="مثال: 2.5m"
+                />
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                ملاحظات / Notes
+              </label>
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                rows={4}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="أي ملاحظات إضافية..."
+              />
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-center">
+              <button
+                type="submit"
+                className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"
+              >
+                رفع الدرفت / Upload Draft
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
