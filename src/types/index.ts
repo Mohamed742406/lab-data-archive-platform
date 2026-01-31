@@ -1,33 +1,20 @@
-export type TestType = 'concrete' | 'asphalt' | 'soil';
-export type ReportStatus = 'under_review' | 'approved';
-export type UserRole = 'technician' | 'engineer';
-export type ViewTab = 'dashboard' | 'archive';
-
-export interface DraftRecord {
-  id: string;
-  sampleId: string;
-  testType: TestType;
-  imageUrl: string;
-  imageName: string;
-  uploadedBy: string;
-  uploadedAt: Date;
-  status: ReportStatus;
-  notes?: string;
-  engineerNotes?: string;
-  finalReportUrl?: string;
-  excelFileUrl?: string;
-  excelFileName?: string;
+export interface Draft {
+  id: number;
+  draft_number: string;
+  project_name: string;
+  client_name: string;
+  test_type: string;
+  sample_location: string;
+  depth: string;
+  status: 'pending' | 'approved' | 'rejected';
+  technician_id: string;
+  engineer_id: string | null;
+  notes: string | null;
+  created_at: string;
 }
 
 export interface User {
   id: string;
   name: string;
-  role: UserRole;
-  username: string;
-  password: string;
-}
-
-export interface AuthState {
-  isAuthenticated: boolean;
-  currentUser: User | null;
+  role: 'technician' | 'engineer';
 }
